@@ -1,26 +1,36 @@
-package TelegramGOBot
+package main
 
 import (
-	"TelegramGOBot/clients/telegram"
+	event_consumer "TelegramGOBot/consumer/event-consumer"
+	"TelegramGOBot/events/telegram"
 	"flag"
 	"log"
+
+	tgClient "TelegramGOBot/clients/telegram"
+	"TelegramGOBot/storage/files"
 )
 
 const (
-	tgBotHost = "api.telegram.org"
+	tgBotHost   = "api.telegram.org"
+	storagePath = "storage"
+	batchSize   = 100
 )
 
 func main() {
-	tgClient = telegram.New(mustToken())
+	eventsProcessor := telegram.New(
+		tgClient.New(tgBotHost, mustToken()),
+		files.New(storagePath),
+	)
 
-	//fetcher = fetcher.New(tgClient)
+	log.Printf("Service started")
 
-	//processor = processor.New(tgClient)
-
-	//consumer.Start(fetcher, processor)
+	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
+	if err := consumer.Start(); err != nil {
+		log.Fatal("Service is stopped", err)
+	}
 }
 
-func mustToken(string, error) {
+func mustToken() string {
 	token := flag.String(
 		"token-bot-token",
 		"",
@@ -30,4 +40,5 @@ func mustToken(string, error) {
 	if *token == "" {
 		log.Fatal("Token is not avaleble")
 	}
+	return *token
 }
