@@ -70,12 +70,13 @@ func (p *Processor) sendRandom(chatID int, username string) (err error) {
 	page, err := p.storage.PickRandom(username)
 	{
 		if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
-
+			return sendMsg("An empty folder. You haven't posted any links yet")
 		}
 	}
 	if errors.Is(err, storage.ErrNoSavedPages) {
 		return sendMsg(msgNoSavedPages)
 	}
+
 	if err := sendMsg(page.URL); err != nil {
 		return err
 	}

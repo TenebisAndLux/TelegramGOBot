@@ -46,7 +46,12 @@ func (c Consumer) Start() error {
 		if len(gotEvents) == 0 {
 			log.Printf("Retrying in %d seconds...", retryInterval)
 			time.Sleep(time.Duration(retryInterval) * time.Second)
-			retryInterval *= 2
+			continue
+		}
+
+		if err := c.handleEvents(gotEvents); err != nil {
+			log.Print(err)
+
 			continue
 		}
 
